@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,6 +8,7 @@ import { generateHeatmapData } from '../lib/mapData';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MapProps {
   incidents: Incident[];
@@ -43,22 +45,48 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
 
       // If reporting mode is enabled, add click handling for location selection
       if (isReporting) {
+        // Make sure map click is being detected
+        console.log('Map initialized in reporting mode, click to select location');
+        
+        // Remove previous click handlers if any
+        map.current.off('click');
+        
         map.current.on('click', (e) => {
+          console.log('Map clicked at:', e.lngLat);
           const { lng, lat } = e.lngLat;
           setSelectedLocation({ lat, lng });
           
+          // Remove existing marker if any
           if (markerRef.current) {
             markerRef.current.remove();
           }
           
-          const marker = new mapboxgl.Marker({ color: '#007FB6' })
+          // Create new marker at clicked location
+          const marker = new mapboxgl.Marker({ color: '#007FB6', draggable: true })
             .setLngLat([lng, lat])
             .addTo(map.current!);
+          
+          // Update location when marker is dragged
+          marker.on('dragend', () => {
+            const position = marker.getLngLat();
+            setSelectedLocation({ lat: position.lat, lng: position.lng });
+            
+            if (onLocationSelect) {
+              onLocationSelect(position.lat, position.lng);
+              toast.success("Location updated", {
+                description: `Selected position: ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`
+              });
+            }
+          });
             
           markerRef.current = marker;
           
+          // Call the callback function with the selected location
           if (onLocationSelect) {
             onLocationSelect(lat, lng);
+            toast.success("Location selected", {
+              description: `Selected position: ${lat.toFixed(4)}, ${lng.toFixed(4)}`
+            });
           }
         });
       }
@@ -71,6 +99,9 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
       };
     } catch (error) {
       console.error("Error initializing map:", error);
+      toast.error("Error initializing map", {
+        description: "Please check your Mapbox token and try again"
+      });
     }
   }, [mapToken, isReporting, onLocationSelect]);
 
@@ -78,7 +109,7 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
   useEffect(() => {
     if (!map.current || !mapToken || incidents.length === 0) return;
 
-    map.current.on('load', () => {
+    const handleMapLoad = () => {
       if (!map.current) return;
       
       // Add heatmap layer
@@ -136,11 +167,13 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
             `))
           .addTo(map.current!);
       });
-    });
+    };
     
     // If map is already loaded, trigger the load event handler manually
     if (map.current && map.current.loaded()) {
-      map.current.fire('load');
+      handleMapLoad();
+    } else if (map.current) {
+      map.current.once('load', handleMapLoad);
     }
   }, [incidents, mapToken]);
 
@@ -155,6 +188,9 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
       setMapToken(token);
       setShowTokenInput(false);
       localStorage.setItem('mapbox_token', token); // Save for future sessions
+      toast.success("Mapbox token saved", {
+        description: "Your token has been saved and will be used for future sessions"
+      });
     }
   };
 
@@ -196,7 +232,18 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
           </form>
         </Card>
       ) : (
-        <div ref={mapContainer} className="w-full h-full min-h-[400px] rounded-lg shadow-sm border" />
+        <div className="relative w-full h-full min-h-[400px]">
+          <div ref={mapContainer} className="w-full h-full min-h-[400px] rounded-lg shadow-sm border" />
+          {isReporting && (
+            <div className="absolute bottom-2 right-2 bg-background/90 p-2 rounded shadow-sm text-xs">
+              {selectedLocation ? (
+                <p>Selected: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}</p>
+              ) : (
+                <p>Click on the map to select a location</p>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </>
   );
