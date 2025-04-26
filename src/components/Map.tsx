@@ -1,7 +1,7 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Feature, FeatureCollection, Point } from 'geojson';
 import { Incident, SEVERITY_COLORS, CATEGORY_LABELS } from '../types';
 import { generateHeatmapData } from '../lib/mapData';
 import { Card } from '@/components/ui/card';
@@ -82,7 +82,7 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
       if (!map.current) return;
       
       // Add heatmap layer
-      const heatmapData = generateHeatmapData(incidents);
+      const heatmapData: FeatureCollection<Point> = generateHeatmapData(incidents);
       
       if (map.current.getSource('incidents')) {
         (map.current.getSource('incidents') as mapboxgl.GeoJSONSource).setData(heatmapData);
@@ -118,8 +118,6 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
 
       // Add individual markers for each incident
       incidents.forEach(incident => {
-        const severityClass = SEVERITY_COLORS[incident.severity].replace('bg-', '');
-        
         // Create custom marker element
         const el = document.createElement('div');
         el.className = `incident-pulse ${SEVERITY_COLORS[incident.severity]}`;
@@ -136,12 +134,12 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
                 <p class="text-xs italic">${incident.location_description || ''}</p>
               </div>
             `))
-          .addTo(map.current);
+          .addTo(map.current!);
       });
     });
     
     // If map is already loaded, trigger the load event handler manually
-    if (map.current.loaded()) {
+    if (map.current && map.current.loaded()) {
       map.current.fire('load');
     }
   }, [incidents, mapToken]);

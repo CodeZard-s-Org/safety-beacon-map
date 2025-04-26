@@ -1,5 +1,6 @@
 
 import { Incident } from '../types';
+import { Feature, FeatureCollection, Point } from 'geojson';
 
 // Sample data for testing the map and heatmap visualization
 export const sampleIncidents: Incident[] = [
@@ -85,11 +86,11 @@ export const sampleIncidents: Incident[] = [
   }
 ];
 
-export const generateHeatmapData = (incidents: Incident[]) => {
+export const generateHeatmapData = (incidents: Incident[]): FeatureCollection<Point> => {
   return {
-    type: 'FeatureCollection',
+    type: "FeatureCollection" as const,
     features: incidents.map(incident => ({
-      type: 'Feature',
+      type: "Feature" as const,
       properties: {
         intensity: 
           incident.severity === 'low' ? 0.3 :
@@ -97,7 +98,7 @@ export const generateHeatmapData = (incidents: Incident[]) => {
           incident.severity === 'high' ? 0.8 : 1
       },
       geometry: {
-        type: 'Point',
+        type: "Point" as const,
         coordinates: [incident.longitude, incident.latitude]
       }
     }))
