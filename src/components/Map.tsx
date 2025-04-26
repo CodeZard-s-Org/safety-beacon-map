@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,7 +6,7 @@ import { Incident, SEVERITY_COLORS, CATEGORY_LABELS } from '../types';
 import { generateHeatmapData } from '../lib/mapData';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Store } from 'lucide-react';
+import { MapPin, Store, Map as MapIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MapProps {
