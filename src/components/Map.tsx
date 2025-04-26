@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -203,7 +204,12 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
         const locationDesc = incident.location_description || 
           `Coordinates: ${incident.latitude.toFixed(4)}, ${incident.longitude.toFixed(4)}`;
         
-        // Create formatted content for the popup
+        // Format the date for display
+        const incidentDate = new Date(incident.timestamp);
+        const formattedDate = incidentDate.toLocaleDateString();
+        const formattedTime = incidentDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Create formatted content for the popup with improved location display
         const popupContent = `
           <div class="incident-popup p-3">
             <div class="flex items-center gap-2 mb-2">
@@ -213,12 +219,19 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
             <p class="text-sm mb-2">${incident.description}</p>
             <div class="text-xs text-muted-foreground">
               <div class="flex items-center gap-1 mb-1">
-                <Store className="h-3 w-3" />
-                ${locationDesc}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 3h18v18H3z"></path>
+                  <path d="M3 9h18"></path>
+                  <path d="M15 3v18"></path>
+                </svg>
+                <strong>Location:</strong> ${locationDesc}
               </div>
               <div class="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                ${new Date(incident.timestamp).toLocaleString()}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <strong>Time:</strong> ${formattedDate}, ${formattedTime}
               </div>
             </div>
           </div>
