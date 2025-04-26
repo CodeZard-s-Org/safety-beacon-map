@@ -5,74 +5,78 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11.2%;
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 195 85% 35%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 175 84% 32%;
+    --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 195 85% 35%;
-
+    --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --safety-50: 217 90% 95%;
+    --safety-100: 217 90% 90%;
+    --safety-200: 217 90% 80%;
+    --safety-300: 217 90% 70%;
+    --safety-400: 217 90% 60%;
+    --safety-500: 217 90% 50%;
+    --safety-600: 217 90% 45%;
+    --safety-700: 217 90% 40%;
+    --safety-800: 217 90% 35%;
+    --safety-900: 217 90% 30%;
+    --safety-950: 217 90% 25%;
+    --alert-low: 50 100% 80%;
+    --alert-medium: 40 100% 70%;
+    --alert-high: 25 100% 60%;
+    --alert-critical: 0 100% 65%;
   }
 
   .dark {
-    --background: 220 40% 10%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
-    --card: 222 40% 13%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222 40% 13%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 195 85% 45%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 175 84% 32%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 195 85% 45%;
+    --ring: 224.3 76.3% 48%;
+    --safety-50: 217 90% 10%;
+    --safety-100: 217 90% 15%;
+    --safety-200: 217 90% 20%;
+    --safety-300: 217 90% 25%;
+    --safety-400: 217 90% 30%;
+    --safety-500: 217 90% 40%;
+    --safety-600: 217 90% 50%;
+    --safety-700: 217 90% 60%;
+    --safety-800: 217 90% 70%;
+    --safety-900: 217 90% 80%;
+    --safety-950: 217 90% 90%;
+    --alert-low: 50 70% 50%;
+    --alert-medium: 40 80% 60%;
+    --alert-high: 25 90% 50%;
+    --alert-critical: 0 100% 60%;
   }
 }
 
@@ -80,66 +84,74 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-.map-container {
-  width: 100%;
-  height: 100%;
+/* Map marker styles */
+.incident-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
-.mapboxgl-popup {
-  max-width: 400px !important;
+.incident-marker:hover {
+  transform: scale(1.2);
 }
 
+/* Map popup styles */
 .mapboxgl-popup-content {
-  @apply bg-background p-4 rounded-md shadow-lg border border-border;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 250px;
 }
 
-.mapboxgl-popup-close-button {
-  @apply text-lg p-1;
+.incident-popup h4 {
+  margin-top: 0;
+  color: #111827;
 }
 
-.mapboxgl-ctrl-group {
-  @apply bg-background border border-border !important;
+.incident-popup p {
+  line-height: 1.4;
 }
 
-.mapboxgl-ctrl-group button {
-  @apply text-foreground !important;
-}
-
+/* Incident severities pulse effect */
 .incident-pulse {
-  width: 20px;
-  height: 20px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  position: relative;
-}
-
-.incident-pulse::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+  background-color: red;
+  border: 2px solid white;
+  box-shadow: 0 0 0 rgba(204, 169, 44, 0.4);
   animation: pulse 2s infinite;
-  opacity: 0.7;
+  cursor: pointer;
 }
 
 @keyframes pulse {
   0% {
-    transform: scale(0.8);
-    opacity: 0.7;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   }
   70% {
-    transform: scale(2);
-    opacity: 0;
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
   }
   100% {
-    transform: scale(0.8);
-    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
+}
+
+.bg-alert-low {
+  background-color: hsl(var(--alert-low));
+}
+
+.bg-alert-medium {
+  background-color: hsl(var(--alert-medium));
+}
+
+.bg-alert-high {
+  background-color: hsl(var(--alert-high));
+}
+
+.bg-alert-critical {
+  background-color: hsl(var(--alert-critical));
 }

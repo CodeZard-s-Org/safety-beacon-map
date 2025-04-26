@@ -26,6 +26,7 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
   const [showTokenInput, setShowTokenInput] = useState<boolean>(MAPBOX_TOKEN === '');
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
   const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   useEffect(() => {
     if (!mapContainer.current || !mapToken) return;
@@ -148,25 +149,46 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
         });
       }
 
+      // Clear existing markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      
       // Add individual markers for each incident
       incidents.forEach(incident => {
         // Create custom marker element
         const el = document.createElement('div');
-        el.className = `incident-pulse ${SEVERITY_COLORS[incident.severity]}`;
+        el.className = 'incident-marker';
+        el.style.backgroundColor = SEVERITY_COLORS[incident.severity].replace('bg-', '');
+        el.style.width = '12px';
+        el.style.height = '12px';
+        el.style.borderRadius = '50%';
+        el.style.border = '2px solid white';
+        el.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
         
-        // Add marker
+        // Create formatted content for the popup
+        const popupContent = `
+          <div class="incident-popup">
+            <h4 style="font-weight: bold; margin-bottom: 4px;">${CATEGORY_LABELS[incident.category]}</h4>
+            <p style="font-size: 14px; margin-bottom: 8px;">${incident.description}</p>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">
+              ${new Date(incident.timestamp).toLocaleString()}
+            </div>
+            <div style="font-size: 12px; font-style: italic; color: #666;">
+              ${incident.location_description || 'Location unknown'}
+            </div>
+          </div>
+        `;
+        
+        // Add marker with popup
         const marker = new mapboxgl.Marker(el)
           .setLngLat([incident.longitude, incident.latitude])
-          .setPopup(new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <div>
-                <h4 class="font-bold">${CATEGORY_LABELS[incident.category]}</h4>
-                <p class="text-sm">${incident.description}</p>
-                <p class="text-xs mt-1">${new Date(incident.timestamp).toLocaleString()}</p>
-                <p class="text-xs italic">${incident.location_description || ''}</p>
-              </div>
-            `))
+          .setPopup(
+            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: false })
+              .setHTML(popupContent)
+          )
           .addTo(map.current!);
+
+        markersRef.current.push(marker);
       });
     };
     
