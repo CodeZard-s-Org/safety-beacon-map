@@ -48,9 +48,10 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
         // Make sure map click is being detected
         console.log('Map initialized in reporting mode, click to select location');
         
-        // Remove previous click handlers if any
-        map.current.off('click');
-        
+        // Remove previous click handlers if any - fix the error by removing this line
+        // We don't need to explicitly remove click handlers since we're setting up the map
+        // for the first time in this effect
+
         map.current.on('click', (e) => {
           console.log('Map clicked at:', e.lngLat);
           const { lng, lat } = e.lngLat;
