@@ -7,7 +7,7 @@ import { Incident, SEVERITY_COLORS, CATEGORY_LABELS } from '../types';
 import { generateHeatmapData } from '../lib/mapData';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapIcon } from 'lucide-react';
+import { MapPin, Store } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MapProps {
@@ -46,13 +46,8 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
 
       // If reporting mode is enabled, add click handling for location selection
       if (isReporting) {
-        // Make sure map click is being detected
         console.log('Map initialized in reporting mode, click to select location');
         
-        // Remove previous click handlers if any - fix the error by removing this line
-        // We don't need to explicitly remove click handlers since we're setting up the map
-        // for the first time in this effect
-
         map.current.on('click', (e) => {
           console.log('Map clicked at:', e.lngLat);
           const { lng, lat } = e.lngLat;
@@ -63,10 +58,41 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
             markerRef.current.remove();
           }
           
+          // Create new marker element
+          const el = document.createElement('div');
+          el.className = 'marker-pin';
+          el.innerHTML = `<div class="flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full shadow-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>`;
+          
           // Create new marker at clicked location
-          const marker = new mapboxgl.Marker({ color: '#007FB6', draggable: true })
+          const marker = new mapboxgl.Marker({
+            element: el,
+            draggable: true
+          })
             .setLngLat([lng, lat])
             .addTo(map.current!);
+          
+          // Add popup for selected location
+          const popup = new mapboxgl.Popup({
+            offset: 25,
+            closeButton: true,
+            closeOnClick: false
+          })
+            .setHTML(`
+              <div class="p-2">
+                <h4 class="font-semibold mb-1">Selected Location</h4>
+                <p class="text-sm">Latitude: ${lat.toFixed(4)}</p>
+                <p class="text-sm">Longitude: ${lng.toFixed(4)}</p>
+                <p class="text-sm text-muted-foreground mt-1">Drag pin to adjust location</p>
+              </div>
+            `);
+          
+          marker.setPopup(popup);
+          popup.addTo(map.current!);
           
           // Update location when marker is dragged
           marker.on('dragend', () => {
@@ -79,6 +105,16 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
                 description: `Selected position: ${position.lat.toFixed(4)}, ${position.lng.toFixed(4)}`
               });
             }
+            
+            // Update popup content
+            popup.setHTML(`
+              <div class="p-2">
+                <h4 class="font-semibold mb-1">Selected Location</h4>
+                <p class="text-sm">Latitude: ${position.lat.toFixed(4)}</p>
+                <p class="text-sm">Longitude: ${position.lng.toFixed(4)}</p>
+                <p class="text-sm text-muted-foreground mt-1">Drag pin to adjust location</p>
+              </div>
+            `);
           });
             
           markerRef.current = marker;
@@ -93,7 +129,6 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
         });
       }
 
-      // Clean up on unmount
       return () => {
         if (map.current) {
           map.current.remove();
@@ -165,16 +200,27 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
         el.style.border = '2px solid white';
         el.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
         
+        // Get location description or coordinates
+        const locationDesc = incident.location_description || 
+          `Coordinates: ${incident.latitude.toFixed(4)}, ${incident.longitude.toFixed(4)}`;
+        
         // Create formatted content for the popup
         const popupContent = `
-          <div class="incident-popup">
-            <h4 style="font-weight: bold; margin-bottom: 4px;">${CATEGORY_LABELS[incident.category]}</h4>
-            <p style="font-size: 14px; margin-bottom: 8px;">${incident.description}</p>
-            <div style="font-size: 12px; color: #666; margin-top: 4px;">
-              ${new Date(incident.timestamp).toLocaleString()}
+          <div class="incident-popup p-3">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="inline-block w-3 h-3 rounded-full ${SEVERITY_COLORS[incident.severity]}"></span>
+              <h4 class="font-semibold">${CATEGORY_LABELS[incident.category]}</h4>
             </div>
-            <div style="font-size: 12px; font-style: italic; color: #666;">
-              ${incident.location_description || 'Location unknown'}
+            <p class="text-sm mb-2">${incident.description}</p>
+            <div class="text-xs text-muted-foreground">
+              <div class="flex items-center gap-1 mb-1">
+                <Store className="h-3 w-3" />
+                ${locationDesc}
+              </div>
+              <div class="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                ${new Date(incident.timestamp).toLocaleString()}
+              </div>
             </div>
           </div>
         `;
@@ -183,7 +229,12 @@ const Map: React.FC<MapProps> = ({ incidents, onLocationSelect, isReporting = fa
         const marker = new mapboxgl.Marker(el)
           .setLngLat([incident.longitude, incident.latitude])
           .setPopup(
-            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: false })
+            new mapboxgl.Popup({ 
+              offset: 15, 
+              closeButton: true, 
+              closeOnClick: false,
+              className: 'incident-popup-container'
+            })
               .setHTML(popupContent)
           )
           .addTo(map.current!);
