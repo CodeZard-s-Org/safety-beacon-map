@@ -1,0 +1,8 @@
+[build]
+  base = "src"
+  command = "npm run build"
+  publish = "src/dist"
+  functions = "src/netlify/functions"
+
+[build.environment]
+  NODE_ENV = "development"
