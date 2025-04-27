@@ -22,6 +22,7 @@ export interface Incident {
 }
 
 export interface ReportFormValues {
+  title: string;
   category: IncidentCategory;
   severity: IncidentSeverity;
   description: string;
