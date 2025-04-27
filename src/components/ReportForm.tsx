@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { supabase } from "@/lib/supabaseClient"; // Import Supabase client
 import { useForm } from 'react-hook-form';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,14 +53,29 @@ const ReportForm: React.FC<ReportFormProps> = ({ onSubmit, selectedLocation }) =
     };
     
     try {
-      await onSubmit(formData);
+      // Insert the form data into Supabase
+      const { error } = await supabase.from("reports").insert([
+        {
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          severity: formData.severity,
+          location_description: formData.location_description || '',
+          latitude: formData.latitude,
+          longitude: formData.longitude
+        }
+      ]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
       
       toast({
         title: "Report Submitted",
         description: "Thank you for your report. It has been submitted anonymously.",
       });
       
-      reset();
+      reset(); // Reset form fields
     } catch (error) {
       toast({
         title: "Error Submitting Report",
